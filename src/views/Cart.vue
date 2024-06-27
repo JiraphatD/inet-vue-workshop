@@ -25,7 +25,7 @@
       <v-toolbar-title>Cart</v-toolbar-title>
     </v-app-bar>
 
-    <v-main style="padding: 2vh">
+    <v-main>
       <div v-if="cartItems">
         <div v-for="product in cartItems" :key="product.product_id">
           <v-list-item>
@@ -89,6 +89,7 @@
               "
               color="warning"
               @click="buy"
+              :disabled="cartItems.length == 0"
               >buy</v-btn
             ></v-col
           >
@@ -102,6 +103,8 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 export default {
   created() {
     this.getData();
@@ -172,21 +175,40 @@ export default {
       }
     },
     async buy() {
-      // console.log(this.cartItems);
+      console.log(this.cartItems);
       try {
-        const orderPayload = {
-          buyer: "John Doe", // Replace with the actual buyer name
-          order_list: this.cartItems.map((item) => ({
-            product_id: item.product_id,
-            product_name: item.product_name,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          total_price: this.sumPrice(), // Calculate the total price based on cartItems (if needed)
-        };
-        await this.axios.post("http://localhost:3000/order", orderPayload);
-        await this.axios.delete("http://localhost:3000/cart");
-        window.location.reload();
+        let hasError = false; // Flag to track if any item has an error
+        this.cartItems.forEach((item) => {
+          if (item.quantity > item.amount) {
+            hasError = true;
+            Swal.fire({
+              icon: "error",
+              title: "Not enough",
+            });
+          }
+        });
+        if (!hasError) {
+          // Send the request only when no errors
+          const orderPayload = {
+            buyer: "John Doe", // Replace with the actual buyer name
+            order_list: this.cartItems.map((item) => ({
+              product_id: item.product_id,
+              product_name: item.product_name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+            total_price: this.sumPrice(), // Calculate the total price based on cartItems (if needed)
+          };
+          await this.axios.post("http://localhost:3000/order", orderPayload);
+          await this.axios.delete("http://localhost:3000/cart");
+          Swal.fire({
+            title: "Success",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+            didClose: () => this.$router.push("/store"),
+          });
+        }
       } catch (error) {
         console.log(error);
       }

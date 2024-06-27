@@ -28,8 +28,14 @@
     <div class="ma-5">
       <v-row>
         <v-col cols="3" v-for="product in products" :key="product.product_id"
-          ><v-card
-            ><v-card-title primary-title>{{
+          ><v-card>
+            <v-img
+              width="100%"
+              height="125"
+              :src="product.imageUrl"
+              alt="Product Image"
+            ></v-img>
+            <v-card-title primary-title>{{
               product.product_name
             }}</v-card-title>
             <p class="detail mx-5">{{ product.detail }}</p>
@@ -79,6 +85,10 @@
             v-model="editedProduct.amount"
             label="Amount"
           ></v-text-field>
+          <v-text-field
+            v-model="editedProduct.imageUrl"
+            label="imageUrl"
+          ></v-text-field>
           <!-- ... other fields ... -->
         </v-card-text>
         <v-card-actions>
@@ -124,6 +134,7 @@ export default {
         detail: "",
         price: null,
         amount: null,
+        imageUrl: "",
       },
     };
   },
@@ -180,6 +191,7 @@ export default {
             detail: this.editedProduct.detail,
             price: this.editedProduct.price,
             amount: this.editedProduct.amount,
+            imageUrl: this.editedProduct.imageUrl,
           }
         );
       } else {
@@ -188,6 +200,7 @@ export default {
           detail: this.editedProduct.detail,
           price: this.editedProduct.price,
           amount: this.editedProduct.amount,
+          imageUrl: this.editedProduct.imageUrl,
         });
       }
       this.dialog = false; // Close the dialog

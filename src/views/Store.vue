@@ -1,5 +1,5 @@
 <template lang="">
-  <v-app id="inspire">
+  <v-app id="inspire" style="margin-bottom: 8vh">
     <v-navigation-drawer v-model="drawer" app temporary>
       <v-list dense>
         <v-list-item-group color="primary" v-model="selectedItem">
@@ -28,8 +28,14 @@
     <div class="ma-5">
       <v-row>
         <v-col cols="3" v-for="product in products" :key="product.product_id"
-          ><v-card @click="showDetail(product)"
-            ><v-card-title primary-title>{{
+          ><v-card @click="showDetail(product)">
+            <v-img
+              width="100%"
+              height="125"
+              :src="product.imageUrl"
+              alt="Product Image"
+            ></v-img>
+            <v-card-title primary-title>{{
               product.product_name
             }}</v-card-title>
             <p class="detail mx-5">{{ product.detail }}</p>
@@ -80,6 +86,7 @@
     >
     <v-dialog v-model="dialog" max-width="500px">
       <v-card class="pa-3">
+        <v-img :src="productDetail.imageUrl"></v-img>
         <v-card-title class="center">{{
           productDetail.product_name
         }}</v-card-title>
@@ -91,6 +98,7 @@
   </v-app>
 </template>
 <script>
+import Swal from "sweetalert2";
 export default {
   created() {
     this.getData();
@@ -151,7 +159,7 @@ export default {
       }
     },
     async addCart(product) {
-      console.log(product.product_id);
+      console.log(product);
       try {
         const existingCartItem = await this.axios.get(
           `http://localhost:3000/cart/${product.product_id}`
@@ -167,18 +175,26 @@ export default {
             }
           );
           console.log("plus");
+          window.location.reload();
         } else {
-          // Product doesn't exist in the cart, create a new cart item
-          await this.axios.post("http://localhost:3000/cart", {
-            product_id: product.product_id,
-            product_name: product.product_name,
-            price: product.price,
-            amount: product.amount,
-            quantity: product.count,
-          });
-          console.log("add new");
+          if (product.count > product.amount) {
+            Swal.fire({
+              icon: "error",
+              title: "not enough",
+            });
+          } else {
+            // Product doesn't exist in the cart, create a new cart item
+            await this.axios.post("http://localhost:3000/cart", {
+              product_id: product.product_id,
+              product_name: product.product_name,
+              price: product.price,
+              amount: product.amount,
+              quantity: product.count,
+            });
+            console.log("add new");
+            window.location.reload();
+          }
         }
-        window.location.reload();
       } catch (error) {
         console.log("Error adding product to cart:", error.message);
       }
